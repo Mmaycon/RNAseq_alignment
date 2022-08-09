@@ -46,7 +46,7 @@ gunzip *clean.fastq
 STAR --runMode alignReads --genomeDir /media/hd/biosoftwares/pipeline_test/genome --outSAMtype BAM SortedByCoordinate --readFilesIn /media/hd/biosoftwares/pipeline_test/sra/SRR6043351_1P_clean.fastq /media/hd/biosoftwares/pipeline_test/sra/SRR6043351_2P_clean.fastq  --outFileNamePrefix /media/hd/biosoftwares/pipeline_test/sra/mapped --runThreadN 16
 
 # Qualimap (alignment report)
-./qualimap bamqc -bam "SRR6043351_clean.bam directory" -gff /media/hd/emerson/SRP117763/STAR/Homo_sapiens.GRCh38.106.gtf --java-mem-size=4000M -outdir /media/hd/biosoftwares/pipeline_test/qualit_alignment -outfile SRR6043351_alignment_quality_report.pdf
+qualimap bamqc -bam "SRR6043351_clean.bam directory" -gff /media/hd/emerson/SRP117763/STAR/Homo_sapiens.GRCh38.106.gtf --java-mem-size=4000M -outdir /media/hd/biosoftwares/pipeline_test/qualit_alignment -outfile SRR6043351_alignment_quality_report.pdf
 
 # Count genes
 featureCounts -p -O -a /media/hd/emerson/SRP117763/STAR/Homo_sapiens.GRCh38.106.gtf -o count.out -T 8 /media/hd/biosoftwares/pipeline_test/sra/mappedAligned.sortedByCoord.out.bam -o featurecounts.txt
