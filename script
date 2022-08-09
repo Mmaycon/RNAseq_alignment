@@ -1,0 +1,56 @@
+# Ubuntu 
+# 
+#
+
+# Create and access a conda enviroment 
+´´´sh
+conda create -n "enviroment name"
+conda activate “enviroment name” 
+´´´sh
+
+# Cache configuration 
+## to direct a path for your downloads and outputs
+´´´sh
+/vdb-config -i
+´´´sh
+## see https://www.youtube.com/watch?v=zE851fWCYQg (min 8:06)
+
+# Install packages via conda at your enviroment
+´´´sh
+conda install -c bioconda sra-tools  # tool to download and turn .sra files into .fastq files
+conda install -c bioconda fastqc # to view sequence read quality
+conda install -c bioconda trimmomatic # to trimm reads
+conda install -c bioconda star # to do the alignment 
+conda install -c bioconda qualimap # alignment quality report
+conda install -c bioconda subrea # featureCounts to generate the gene count matrix
+´´´sh
+
+# Indexing genome reference with STAR
+STAR --runMode genomeGenerate --genomeDir  /media/hd/biosoftwares/pipeline_test/genome --genomeFastaFiles /media/hd/emerson/SRP117763/STAR/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa --sjdbGTFfile /media/hd/emerson/SRP117763/STAR/Homo_sapiens.GRCh38.106.gtf --outFileNamePrefix /media/hd/biosoftwares/pipeline_test/genome/index --runThreadN 16
+
+# Donwload and convert .sra
+## take SRR6043351 as example
+prefetch SRR6043351
+fasterq-dump SRR6043351.sra
+
+# sequence reads quality 
+fastqc SRR6043351_1.fastq
+fastqc SRR6043351_2.fastq
+
+# Trimming
+java -jar /media/hd/biosoftwares/envs/alignment_project/share/trimmomatic-0.39-2/trimmomatic.jar PE SRR6043351_1.fastq SRR6043351_2.fastq SRR6043351_1P_clean.fastq.gz SRR6043351_1UP_clean.fastq.gz SRR6043351_2P_clean.fastq.gz SRR6043351_2UP_clean.fastq.gz ILLUMINACLIP:/media/hd/biosoftwares/pipeline_test/TruSeq3-PE.fa:2:30:10 TRAILING:10 -phred33
+##  TRAILING:10 indicates a minimal quality score up to 10 (It's ok for our purpose, e.g. differential expression and downstrem analysis)
+gunzip *clean.fastq
+
+# Alignment 
+STAR --runMode alignReads --genomeDir /media/hd/biosoftwares/pipeline_test/genome --outSAMtype BAM SortedByCoordinate --readFilesIn /media/hd/biosoftwares/pipeline_test/sra/SRR6043351_1P_clean.fastq /media/hd/biosoftwares/pipeline_test/sra/SRR6043351_2P_clean.fastq  --outFileNamePrefix /media/hd/biosoftwares/pipeline_test/sra/mapped --runThreadN 16
+
+# Qualimap (alignment report)
+./qualimap bamqc -bam "SRR6043351_clean.bam directory" -gff /media/hd/emerson/SRP117763/STAR/Homo_sapiens.GRCh38.106.gtf --java-mem-size=4000M -outdir /media/hd/biosoftwares/pipeline_test/qualit_alignment -outfile SRR6043351_alignment_quality_report.pdf
+
+# Count genes
+featureCounts -p -O -a /media/hd/emerson/SRP117763/STAR/Homo_sapiens.GRCh38.106.gtf -o count.out -T 8 /media/hd/biosoftwares/pipeline_test/sra/mappedAligned.sortedByCoord.out.bam -o featurecounts.txt
+
+
+
+# Collaborators: Emerson Santos, Maycon Marção.
