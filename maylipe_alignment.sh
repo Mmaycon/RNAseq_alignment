@@ -1,3 +1,5 @@
+#!/bin/bash
+
 FASTQ_FILE_PATH=""
 OUTPUT_PATH=""
 
